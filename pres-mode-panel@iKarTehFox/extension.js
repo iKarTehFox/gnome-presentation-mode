@@ -25,10 +25,10 @@ const DisabledIcon = 'preferences-desktop-screensaver-symbolic';
 const EnabledIcon = 'display-projector-symbolic';
 
 // Menu labels
-const MENU_TOGGLE_LABEL_ON = "Turn Presentation Mode Off";
-const MENU_TOGGLE_LABEL_OFF = "Turn Presentation Mode On";
-const MENU_STATUS_LABEL_ON = "Presentation Mode: Active";
-const MENU_STATUS_LABEL_OFF = "Presentation Mode: Inactive";
+const MENU_TOGGLE_LABEL_ON = "Disable Presentation Mode";
+const MENU_TOGGLE_LABEL_OFF = "Enable Presentation Mode";
+const MENU_STATUS_LABEL_ON = "Presentation Mode: On";
+const MENU_STATUS_LABEL_OFF = "Presentation Mode: Off";
 
 const InhibitButton = GObject.registerClass(
 class InhibitButton extends PanelMenu.Button {
