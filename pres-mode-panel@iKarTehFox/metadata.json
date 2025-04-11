@@ -3,5 +3,6 @@
 "uuid": "pres-mode-panel@iKarTehFox",
 "name": "Presentation Mode Panel",
 "description": "Adds a panel menu to inhibit the screen saver and screen blanking.",
-"url": "https://github.com/iKarTehFox/gnome-presentation-mode"
+"url": "https://github.com/iKarTehFox/gnome-presentation-mode",
+"version": "1"
 }
