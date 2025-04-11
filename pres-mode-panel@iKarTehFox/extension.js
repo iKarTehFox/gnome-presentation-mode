@@ -99,7 +99,7 @@ class InhibitButton extends PanelMenu.Button {
                 this._originalIdleDelay = this._sessionSettings.get_uint(SESSION_IDLE_KEY);
                 this._originalIdleDim = this._powerSettings.get_boolean(DISPLAY_AC_KEY);
                 
-                log('pres-mode-panel: Stored original settings');
+                console.log('pres-mode-panel: Stored original settings');
                 
                 // Apply new settings
                 this._powerSettings.set_string(POWER_AC_KEY, 'nothing');
@@ -108,7 +108,7 @@ class InhibitButton extends PanelMenu.Button {
                 this._sessionSettings.set_uint(SESSION_IDLE_KEY, 0);
                 this._powerSettings.set_boolean(DISPLAY_AC_KEY, false);
                 
-                log('pres-mode-panel: Applied presentation mode settings');
+                console.log('pres-mode-panel: Applied presentation mode settings');
             } else {
                 // Restore settings
                 this._powerSettings.set_string(POWER_AC_KEY, this._originalAcType);
@@ -117,13 +117,13 @@ class InhibitButton extends PanelMenu.Button {
                 this._sessionSettings.set_uint(SESSION_IDLE_KEY, this._originalIdleDelay);
                 this._powerSettings.set_boolean(DISPLAY_AC_KEY, this._originalIdleDim);
                 
-                log('pres-mode-panel: Restored original settings');
+                console.log('pres-mode-panel: Restored original settings');
             }
             
             // Update UI immediately
             this._updateUI();
         } catch (e) {
-            logError(e, 'pres-mode-panel: Error in toggleState');
+            console.error('pres-mode-panel: Error in toggleState', e);
         }
     }    
     
@@ -153,12 +153,6 @@ class InhibitButton extends PanelMenu.Button {
             this._screenSettings.set_boolean(SCREEN_KEY, this._originalScreensaverState);
             this._sessionSettings.set_uint(SESSION_IDLE_KEY, this._originalIdleDelay);
             this._powerSettings.set_boolean(DISPLAY_AC_KEY, this._originalIdleDim);
-            
-            // Remove session inhibitor
-            if (this._inhibitor) {
-                this._inhibitor.uninhibit();
-                this._inhibitor = null;
-            }
         }
         
         super.destroy();
