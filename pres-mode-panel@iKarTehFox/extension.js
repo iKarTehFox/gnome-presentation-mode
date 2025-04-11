@@ -33,7 +33,7 @@ const MENU_STATUS_LABEL_OFF = "Presentation Mode: Inactive";
 const InhibitButton = GObject.registerClass(
 class InhibitButton extends PanelMenu.Button {
     _init() {
-        super._init(0.0, 'Inhibit Applet');
+        super._init(0.0, 'Presentation Mode Panel');
         
         this._icon = new St.Icon({
             icon_name: DisabledIcon,
@@ -185,7 +185,7 @@ class InhibitButton extends PanelMenu.Button {
 export default class PresentationModeExtension extends Extension {
     enable() {
         this._inhibitButton = new InhibitButton();
-        Main.panel.addToStatusArea('inhibit-applet', this._inhibitButton);
+        Main.panel.addToStatusArea('presentation-mode-panel', this._inhibitButton);
     }
 
     disable() {
