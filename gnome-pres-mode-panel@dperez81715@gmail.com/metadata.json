@@ -1,0 +1,7 @@
+{
+"shell-version": ["47"],
+"uuid": "gnome-pres-mode-panel@dperez81715@gmail.com",
+"name": "GNOME Presentation Mode Panel",
+"description": "Adds a panel menu to inhibit the screen saver and screen blanking.",
+"url": "https://github.com/iKarTehFox/gnome-presentation-mode"
+}
