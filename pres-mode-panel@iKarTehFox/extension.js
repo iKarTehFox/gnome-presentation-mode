@@ -122,12 +122,6 @@ class InhibitButton extends PanelMenu.Button {
             
             // Update UI immediately
             this._updateUI();
-            
-            // And also after a short delay to ensure changes have propagated
-            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
-                this._updateUI();
-                return GLib.SOURCE_REMOVE;
-            });
         } catch (e) {
             logError(e, 'pres-mode-panel: Error in toggleState');
         }
