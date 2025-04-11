@@ -1,113 +1,123 @@
-/* -*- mode: js2 - indent-tabs-mode: nil - js2-basic-offset: 4 -*- */
-const Lang = imports.lang;
-const St = imports.gi.St;
-const Gio = imports.gi.Gio;
+'use strict';
 
+const { GObject, St, Gio } = imports.gi;
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
-const PopupMenu = imports.ui.popupMenu;
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
 
-const Gettext = imports.gettext.domain('gnome-shell-extension-inhibitapplet');
-const _ = Gettext.gettext;
-
+// Updated schema and keys based on your system
 const POWER_SCHEMA = 'org.gnome.settings-daemon.plugins.power';
-const POWER_KEY = 'active';
+const POWER_AC_KEY = 'sleep-inactive-ac-type';
+const POWER_BATTERY_KEY = 'sleep-inactive-battery-type';
 const SCREEN_SCHEMA = 'org.gnome.desktop.screensaver';
 const SCREEN_KEY = 'idle-activation-enabled';
 
-let indicationbutton;
-//Icon variables for easy editing/customization:
-let DisabledIcon = 'preferences-desktop-screensaver-symbolic';
-let EnabledIcon = 'system-run-symbolic';
-////An alternative icon could be 'action-unavailable-symbolic'
+// Icons
+const DisabledIcon = 'preferences-desktop-screensaver-symbolic';
+const EnabledIcon = 'system-run-symbolic';
 
-const TOOLTIPON         = _("Suspend Inhibited");
-const TOOLTIPOFF        = _("Suspend Enabled");
-const ROLE              = 'inhibitbutton';
+const TOOLTIPON = "Presentation Mode: ON";
+const TOOLTIPOFF = "Presentation Mode: OFF";
 
-function InhibitButton() {
-    this._init.apply(this, arguments);
-}
+let inhibitButton;
 
-InhibitButton.prototype = {
-    __proto__: PanelMenu.ButtonBox.prototype,
-
-    __proto__: PanelMenu.ButtonBox.prototype,
-
-    _init: function(metadata, params)
-    {
-        PanelMenu.ButtonBox.prototype._init.call(this, {
-            reactive:       true,
-            can_focus:      true,
-            track_hover:    true
+const InhibitButton = GObject.registerClass(
+class InhibitButton extends PanelMenu.Button {
+    _init() {
+        super._init(0.0, 'Inhibit Applet');
+        
+        this._icon = new St.Icon({
+            icon_name: DisabledIcon,
+            style_class: 'system-status-icon',
         });
-
-        this.temp = new St.Icon({
-            icon_name:      DisabledIcon,
-            icon_type:      St.IconType.SYMBOLIC,
-            style_class:    'system-status-icon'
-        });
-
-        this.actor.add_actor(this.temp);
-
-        this.actor.add_style_class_name('panel-status-button');
-        this.actor.has_tooltip = true;
-        this.actor.tooltip_text = TOOLTIPOFF;
-
-        ///Power Setting
+        
+        this.add_child(this._icon);
+        this.tooltip_text = TOOLTIPOFF;
+        
+        // Settings
         this._powerSettings = new Gio.Settings({ schema: POWER_SCHEMA });
-        var powerManagementFlag = this._powerSettings.get_boolean(POWER_KEY);
-        ///ScreenSaver Setting
         this._screenSettings = new Gio.Settings({ schema: SCREEN_SCHEMA });
-        //Make sure the screensaver enable is synchronized
-        this._screenSettings.set_boolean(SCREEN_KEY, powerManagementFlag);
-        //Change Icon if necessary
-        if(!powerManagementFlag) {
-                this.actor.tooltip_text = TOOLTIPON;
-                this.temp.icon_name = EnabledIcon;
-        }
-
-        this.actor.connect('button-press-event', Lang.bind(this, function () {
-                var powerManagementFlag = this._powerSettings.get_boolean(POWER_KEY);
-                this._powerSettings.set_boolean(POWER_KEY, !powerManagementFlag);
-                this._screenSettings.set_boolean(SCREEN_KEY, !powerManagementFlag);
-                if(powerManagementFlag) {
-                        this.actor.tooltip_text = TOOLTIPON;
-                        this.temp.icon_name = EnabledIcon;
-                } else {
-                        this.actor.tooltip_text = TOOLTIPOFF;
-                        this.temp.icon_name = DisabledIcon;
-                }
-        }));
-        Main.panel._insertStatusItem(this.actor, 0);
-        Main.panel._statusArea[ROLE] = this;
-    },
-
-    destroy: function() {
-        if (this._powerSettings) {
-                this._powerSettings.set_boolean(POWER_KEY, true);
-        }
-        if (this._screenSettings) {
-                this._screenSettings.set_boolean(SCREEN_KEY, true);
-        }
-
-        Main.panel._statusArea[ROLE] = null;
-
-        this.actor._delegate = null;
-        this.actor.destroy();
-        this.actor.emit('destroy');
+        
+        // Store original values to restore later
+        this._originalAcType = this._powerSettings.get_string(POWER_AC_KEY);
+        this._originalBatteryType = this._powerSettings.get_string(POWER_BATTERY_KEY);
+        this._originalScreensaverState = this._screenSettings.get_boolean(SCREEN_KEY);
+        
+        // Check if we're already in presentation mode
+        this._isPresentationMode = false;
+        this._checkInitialState();
+        
+        // Connect click handler
+        this.connect('button-press-event', this._toggleState.bind(this));
     }
-};
+    
+    _checkInitialState() {
+        // If both power settings are 'nothing' and screensaver is disabled,
+        // we're already in presentation mode
+        const acType = this._powerSettings.get_string(POWER_AC_KEY);
+        const batteryType = this._powerSettings.get_string(POWER_BATTERY_KEY);
+        const screensaverEnabled = this._screenSettings.get_boolean(SCREEN_KEY);
+        
+        if (acType === 'nothing' && batteryType === 'nothing' && !screensaverEnabled) {
+            this._isPresentationMode = true;
+            this._updateUI();
+        }
+    }
+    
+    _toggleState() {
+        this._isPresentationMode = !this._isPresentationMode;
+        
+        if (this._isPresentationMode) {
+            // Enable presentation mode
+            this._powerSettings.set_string(POWER_AC_KEY, 'nothing');
+            this._powerSettings.set_string(POWER_BATTERY_KEY, 'nothing');
+            this._screenSettings.set_boolean(SCREEN_KEY, false);
+        } else {
+            // Disable presentation mode
+            this._powerSettings.set_string(POWER_AC_KEY, this._originalAcType);
+            this._powerSettings.set_string(POWER_BATTERY_KEY, this._originalBatteryType);
+            this._screenSettings.set_boolean(SCREEN_KEY, this._originalScreensaverState);
+        }
+        
+        this._updateUI();
+    }
+    
+    _updateUI() {
+        if (this._isPresentationMode) {
+            this.tooltip_text = TOOLTIPON;
+            this._icon.icon_name = EnabledIcon;
+        } else {
+            this.tooltip_text = TOOLTIPOFF;
+            this._icon.icon_name = DisabledIcon;
+        }
+    }
+    
+    destroy() {
+        // Restore settings to original values
+        if (this._powerSettings && this._isPresentationMode) {
+            this._powerSettings.set_string(POWER_AC_KEY, this._originalAcType);
+            this._powerSettings.set_string(POWER_BATTERY_KEY, this._originalBatteryType);
+            this._screenSettings.set_boolean(SCREEN_KEY, this._originalScreensaverState);
+        }
+        
+        super.destroy();
+    }
+});
 
-function init(extensionMeta) {
-    imports.gettext.bindtextdomain("gnome-shell-extension-inhibitapplet",
-                           extensionMeta.path + "/locale");
+// Standard extension hooks
+function init() {
+    ExtensionUtils.initTranslations();
 }
 
 function enable() {
-        indicationbutton = new InhibitButton();
+    inhibitButton = new InhibitButton();
+    Main.panel.addToStatusArea('inhibit-applet', inhibitButton);
 }
 
 function disable() {
-	indicationbutton.destroy();
+    if (inhibitButton) {
+        inhibitButton.destroy();
+        inhibitButton = null;
+    }
 }
