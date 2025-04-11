@@ -4,6 +4,7 @@ import GObject from 'gi://GObject';
 import St from 'gi://St';
 import Gio from 'gi://Gio';
 import Shell from 'gi://Shell';
+import GLib from 'gi://GLib';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -46,9 +47,6 @@ class InhibitButton extends PanelMenu.Button {
         this._powerSettings = new Gio.Settings({ schema: POWER_SCHEMA });
         this._screenSettings = new Gio.Settings({ schema: SCREEN_SCHEMA });
         this._sessionSettings = new Gio.Settings({ schema: SESSION_SCHEMA });
-        
-        // Session inhibitor
-        this._inhibitor = null;
         
         // Check if we're already in presentation mode
         this._isPresentationMode = false;
@@ -93,56 +91,48 @@ class InhibitButton extends PanelMenu.Button {
     _toggleState() {
         this._isPresentationMode = !this._isPresentationMode;
         
-        if (this._isPresentationMode) {
-            // Store current settings before enabling presentation mode
-            this._originalAcType = this._powerSettings.get_string(POWER_AC_KEY);
-            this._originalBatteryType = this._powerSettings.get_string(POWER_BATTERY_KEY);
-            this._originalScreensaverState = this._screenSettings.get_boolean(SCREEN_KEY);
-            this._originalIdleDelay = this._sessionSettings.get_uint(SESSION_IDLE_KEY);
-            this._originalIdleDim = this._powerSettings.get_boolean(DISPLAY_AC_KEY);
-            
-            // Enable presentation mode
-            
-            // 1. Disable power management sleep
-            this._powerSettings.set_string(POWER_AC_KEY, 'nothing');
-            this._powerSettings.set_string(POWER_BATTERY_KEY, 'nothing');
-            
-            // 2. Disable screensaver
-            this._screenSettings.set_boolean(SCREEN_KEY, false);
-            
-            // 3. Disable session idle timeout (set to 0 = never)
-            this._sessionSettings.set_uint(SESSION_IDLE_KEY, 0);
-            
-            // 4. Disable display dimming
-            this._powerSettings.set_boolean(DISPLAY_AC_KEY, false);
-            
-            // 5. Use session inhibitor as a fallback
-            if (!this._inhibitor) {
-                this._inhibitor = new Shell.InhibitSession();
-                this._inhibitor.inhibit(
-                    Shell.InhibitFlags.IDLE | Shell.InhibitFlags.SUSPEND,
-                    'Presentation Mode Active'
-                );
+        try {
+            if (this._isPresentationMode) {
+                // Store current settings
+                this._originalAcType = this._powerSettings.get_string(POWER_AC_KEY);
+                this._originalBatteryType = this._powerSettings.get_string(POWER_BATTERY_KEY);
+                this._originalScreensaverState = this._screenSettings.get_boolean(SCREEN_KEY);
+                this._originalIdleDelay = this._sessionSettings.get_uint(SESSION_IDLE_KEY);
+                this._originalIdleDim = this._powerSettings.get_boolean(DISPLAY_AC_KEY);
+                
+                log('pres-mode-panel: Stored original settings');
+                
+                // Apply new settings
+                this._powerSettings.set_string(POWER_AC_KEY, 'nothing');
+                this._powerSettings.set_string(POWER_BATTERY_KEY, 'nothing');
+                this._screenSettings.set_boolean(SCREEN_KEY, false);
+                this._sessionSettings.set_uint(SESSION_IDLE_KEY, 0);
+                this._powerSettings.set_boolean(DISPLAY_AC_KEY, false);
+                
+                log('pres-mode-panel: Applied presentation mode settings');
+            } else {
+                // Restore settings
+                this._powerSettings.set_string(POWER_AC_KEY, this._originalAcType);
+                this._powerSettings.set_string(POWER_BATTERY_KEY, this._originalBatteryType);
+                this._screenSettings.set_boolean(SCREEN_KEY, this._originalScreensaverState);
+                this._sessionSettings.set_uint(SESSION_IDLE_KEY, this._originalIdleDelay);
+                this._powerSettings.set_boolean(DISPLAY_AC_KEY, this._originalIdleDim);
+                
+                log('pres-mode-panel: Restored original settings');
             }
-        } else {
-            // Disable presentation mode
             
-            // Restore all settings to original values
-            this._powerSettings.set_string(POWER_AC_KEY, this._originalAcType);
-            this._powerSettings.set_string(POWER_BATTERY_KEY, this._originalBatteryType);
-            this._screenSettings.set_boolean(SCREEN_KEY, this._originalScreensaverState);
-            this._sessionSettings.set_uint(SESSION_IDLE_KEY, this._originalIdleDelay);
-            this._powerSettings.set_boolean(DISPLAY_AC_KEY, this._originalIdleDim);
+            // Update UI immediately
+            this._updateUI();
             
-            // Remove session inhibitor
-            if (this._inhibitor) {
-                this._inhibitor.uninhibit();
-                this._inhibitor = null;
-            }
+            // And also after a short delay to ensure changes have propagated
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
+                this._updateUI();
+                return GLib.SOURCE_REMOVE;
+            });
+        } catch (e) {
+            logError(e, 'pres-mode-panel: Error in toggleState');
         }
-        
-        this._updateUI();
-    }
+    }    
     
     
     _updateUI() {

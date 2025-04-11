@@ -2,7 +2,7 @@
 
 GNOME Presentation Mode Panel is a GNOME Shell extension that adds a panel menu item which lets you inhibit the screensaver and lock screen in GNOME 47. It's a fork of Raphael Kimmig's [Gnome-Presentation-Mode](https://github.com/RaphaelKimmig/Gnome-Presentation-Mode).
 
-**Screenshot pending... :)**
+![A screenshot of the panel menu open. The header text reads "Presentation Mode: Inactive" and the button below reads "Turn Presentation Mode On"](assets/gnome-screenshot.png)
 
 ## Installation instructions:
 
