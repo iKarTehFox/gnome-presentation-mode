@@ -1,6 +1,6 @@
 {
   "name": "gnome-presentation-mode",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Adds a panel menu to inhibit the screen saver and screen blanking.",
   "homepage": "https://github.com/iKarTehFox/gnome-presentation-mode#readme",
   "bugs": {
