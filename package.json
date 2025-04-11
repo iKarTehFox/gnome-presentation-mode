@@ -1,0 +1,29 @@
+{
+  "name": "gnome-presentation-mode",
+  "version": "1.0.0",
+  "description": "Adds a panel menu to inhibit the screen saver and screen blanking.",
+  "homepage": "https://github.com/iKarTehFox/gnome-presentation-mode#readme",
+  "bugs": {
+    "url": "https://github.com/iKarTehFox/gnome-presentation-mode/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iKarTehFox/gnome-presentation-mode.git"
+  },
+  "license": "GPL-2.0-only",
+  "author": "iKarTehFox",
+  "type": "commonjs",
+  "main": "extension.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@girs/gio-2.0": "^2.84.0-4.0.0-beta.23",
+    "@girs/gjs": "^4.0.0-beta.23",
+    "@girs/gobject-2.0": "^2.84.0-4.0.0-beta.23",
+    "@girs/gtk-4.0": "^4.18.3-4.0.0-beta.23",
+    "@girs/meta-13": "^13.0.0-4.0.0-beta.23",
+    "@girs/shell-13": "^13.0.0-4.0.0-beta.23",
+    "@girs/st-1.0": "^1.0.0-4.0.0-beta.23"
+  }
+}

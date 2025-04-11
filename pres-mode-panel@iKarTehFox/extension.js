@@ -3,7 +3,6 @@
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 import Gio from 'gi://Gio';
-import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -181,7 +180,6 @@ class InhibitButton extends PanelMenu.Button {
         
         super.destroy();
     }
-    
 });
 
 export default class PresentationModeExtension extends Extension {

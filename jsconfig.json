@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "module": "es2020",
+        "baseUrl": ".",
+        "paths": {
+            "resource:///org/gnome/shell/*": ["node_modules/@girs/shell-13/shell-13.d.ts"],
+            "gi://GObject": ["node_modules/@girs/gobject-2.0/gobject-2.0.d.ts"],
+            "gi://St": ["node_modules/@girs/st-1.0/st-1.0.d.ts"],
+            "gi://Gio": ["node_modules/@girs/gio-2.0/gio-2.0.d.ts"],
+            "gi://Meta": ["node_modules/@girs/meta-13/meta-13.d.ts"],
+            "gi://Shell": ["node_modules/@girs/shell-13/shell-13.d.ts"]
+        }
+    },
+    "include": [
+        "pres-mode-panel@iKarTehFox/**/*.js"
+    ]
+}
