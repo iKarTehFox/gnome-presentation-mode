@@ -6,6 +6,10 @@ GNOME Presentation Mode Panel is a GNOME Shell extension that adds a panel menu 
 
 ## Installation instructions:
 
+### GNOME Shell Extensions
+Go to the [GNOME Shell Extensions](https://extensions.gnome.org/extension/8023/presentation-mode-panel/) page and install the extension.
+
+### Manual installation
 Clone this repository and copy the entire `pres-mode-panel@iKarTehFox` folder to the `~/.local/share/gnome-shell/extensions/` directory.
 
 Use this handy command if you want:
